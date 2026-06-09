@@ -82,10 +82,17 @@ The pipeline explicitly opens up its black-box mechanics by outputting 5 publica
 2. Place your raw data file inside data/raw/used_cars.csv.
 
 3. Sequentially process the architecture files to train feature stores, export binaries, and map explainability assets:
+
    python3 1_data_preprocessing.py
+
    python3 2_extract_deberta.py
+
    python3 3_extract_textcnn.py
+
    python3 4_extract_llm.py
+
    python3 5_model_stacking.py
+
    python3 6_comprehensive_matrix.py
+   
    python3 7_explainability_suite.py
