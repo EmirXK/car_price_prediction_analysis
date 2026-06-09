@@ -75,13 +75,14 @@ The pipeline explicitly opens up its black-box mechanics by outputting 5 publica
 ## 🚀 Execution Guide
 
 1. Clone the repository and establish your python virtual environment layout:
+
    python3 -m venv venv
+
    source venv/bin/activate
+   
    pip install -r requirements.txt
 
-2. Place your raw data file inside data/raw/used_cars.csv.
-
-3. Sequentially process the architecture files to train feature stores, export binaries, and map explainability assets:
+2. Sequentially process the architecture files to train feature stores, export binaries, and map explainability assets:
 
    python3 1_data_preprocessing.py
 
@@ -94,5 +95,5 @@ The pipeline explicitly opens up its black-box mechanics by outputting 5 publica
    python3 5_model_stacking.py
 
    python3 6_comprehensive_matrix.py
-   
+
    python3 7_explainability_suite.py
