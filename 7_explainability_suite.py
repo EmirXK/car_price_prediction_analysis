@@ -56,7 +56,8 @@ def main():
     plt.xlabel('True Vehicle Price ($)', fontsize=10)
     plt.ylabel('Model Predicted Price ($)', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig1_prediction_fit.png', dpi=300)
+    # Changed extension to .pdf and removed dpi parameter since vector images don't use pixels
+    plt.savefig('figures/fig1_prediction_fit.pdf')
     plt.close()
 
     # --- FIGURE 2: Residual Analysis (Error Distribution) ---
@@ -68,7 +69,7 @@ def main():
     plt.xlabel('Prediction Deviation Residual ($)', fontsize=10)
     plt.ylabel('Density Count', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig2_residual_distribution.png', dpi=300)
+    plt.savefig('figures/fig2_residual_distribution.pdf')
     plt.close()
 
     # --- FIGURE 3: SHAP Global Feature Importance Summary Graph ---
@@ -102,7 +103,7 @@ def main():
     plt.xlabel('Cumulative Absolute Impact Magnitude on Valuation Model ($)', fontsize=10)
     plt.ylabel('', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig3_shap_importance.png', dpi=300)
+    plt.savefig('figures/fig3_shap_importance.pdf')
     plt.close()
 
     # --- FIGURE 4: LIME Local Instance Explanation ---
@@ -163,9 +164,9 @@ def main():
     plt.xlabel('Local Feature Weight Profile ($ Value Shift Impact)', fontsize=10)
     plt.ylabel('', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig4_lime_local_explanation.png', dpi=300)
+    plt.savefig('figures/fig4_lime_local_explanation.pdf')
     plt.close()
-    print("   -> Saved to figures/fig4_lime_local_explanation.png")
+    print("   -> Saved to figures/fig4_lime_local_explanation.pdf")
 
     # --- FIGURE 5: Heteroscedasticity Analysis ---
     print("[Plotting Figure 5: Residual Error Variance vs. Calculated Vehicle Age...]")
@@ -176,13 +177,13 @@ def main():
     plt.xlabel('Vehicle Age (Years Profile Component)', fontsize=10)
     plt.ylabel('Prediction Error Residual ($)', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig5_heteroscedasticity_age.png', dpi=300)
+    plt.savefig('figures/fig5_heteroscedasticity_age.pdf')
     plt.close()
-    print("   -> Saved to figures/fig5_heteroscedasticity_age.png")
+    print("   -> Saved to figures/fig5_heteroscedasticity_age.pdf")
 
     print("\n" + "="*60)
-    print("SUCCESS: Cleaned 5-Figure Explainability Suite Completed!")
-    print("Graphics are locked, loaded, and perfectly legible.")
+    print("SUCCESS: Cleaned 5-Figure Explainability Suite Completed in PDF format!")
+    print("Graphics are infinitely scalable vector files.")
     print("="*60)
 
 if __name__ == "__main__":
