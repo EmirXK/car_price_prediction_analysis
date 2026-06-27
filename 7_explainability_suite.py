@@ -5,6 +5,7 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import shap
+import subprocess  # Added to handle native Linux vector conversion to EMF
 from sklearn.model_selection import train_test_split
 from lime.lime_tabular import LimeTabularExplainer 
 
@@ -56,8 +57,7 @@ def main():
     plt.xlabel('True Vehicle Price ($)', fontsize=10)
     plt.ylabel('Model Predicted Price ($)', fontsize=10)
     plt.tight_layout()
-    # Changed extension to .pdf and removed dpi parameter since vector images don't use pixels
-    plt.savefig('figures/fig1_prediction_fit.pdf')
+    plt.savefig('figures/fig1_prediction_fit.svg')
     plt.close()
 
     # --- FIGURE 2: Residual Analysis (Error Distribution) ---
@@ -69,7 +69,7 @@ def main():
     plt.xlabel('Prediction Deviation Residual ($)', fontsize=10)
     plt.ylabel('Density Count', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig2_residual_distribution.pdf')
+    plt.savefig('figures/fig2_residual_distribution.svg')
     plt.close()
 
     # --- FIGURE 3: SHAP Global Feature Importance Summary Graph ---
@@ -103,7 +103,7 @@ def main():
     plt.xlabel('Cumulative Absolute Impact Magnitude on Valuation Model ($)', fontsize=10)
     plt.ylabel('', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig3_shap_importance.pdf')
+    plt.savefig('figures/fig3_shap_importance.svg')
     plt.close()
 
     # --- FIGURE 4: LIME Local Instance Explanation ---
@@ -164,9 +164,8 @@ def main():
     plt.xlabel('Local Feature Weight Profile ($ Value Shift Impact)', fontsize=10)
     plt.ylabel('', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig4_lime_local_explanation.pdf')
+    plt.savefig('figures/fig4_lime_local_explanation.svg')
     plt.close()
-    print("   -> Saved to figures/fig4_lime_local_explanation.pdf")
 
     # --- FIGURE 5: Heteroscedasticity Analysis ---
     print("[Plotting Figure 5: Residual Error Variance vs. Calculated Vehicle Age...]")
@@ -177,13 +176,29 @@ def main():
     plt.xlabel('Vehicle Age (Years Profile Component)', fontsize=10)
     plt.ylabel('Prediction Error Residual ($)', fontsize=10)
     plt.tight_layout()
-    plt.savefig('figures/fig5_heteroscedasticity_age.pdf')
+    plt.savefig('figures/fig5_heteroscedasticity_age.svg')
     plt.close()
-    print("   -> Saved to figures/fig5_heteroscedasticity_age.pdf")
+
+    # --- AUTOMATED VECTOR CONVERSION TO EMF ---
+    print("\nExecuting native background vector conversion to EMF format via LibreOffice...")
+    try:
+        # Calls the built-in Linux Mint headless engine to turn all 5 SVGs into native EMFs instantly
+        subprocess.run([
+            'libreoffice', '--headless', '--convert-to', 'emf', 
+            'figures/fig1_prediction_fit.svg', 
+            'figures/fig2_residual_distribution.svg', 
+            'figures/fig3_shap_importance.svg', 
+            'figures/fig4_lime_local_explanation.svg', 
+            'figures/fig5_heteroscedasticity_age.svg', 
+            '--outdir', 'figures'
+        ], check=True, stdout=subprocess.DEVNULL)
+        print("   -> Success! All 5 vector plots successfully compiled to .emf format.")
+    except Exception as e:
+        print(f"   -> Warning: Background conversion failed ({e}). Ensure libreoffice is installed.")
 
     print("\n" + "="*60)
-    print("SUCCESS: Cleaned 5-Figure Explainability Suite Completed in PDF format!")
-    print("Graphics are infinitely scalable vector files.")
+    print("SUCCESS: 5-Figure Explainability Suite Completed!")
+    print("EMF files are generated and ready for direct Google Docs upload.")
     print("="*60)
 
 if __name__ == "__main__":

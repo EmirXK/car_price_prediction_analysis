@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 import os
-import joblib  # Standard tool for serializing massive ML pipelines
-from sklearn.model_selection import train_test_split
+import joblib
+from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.ensemble import RandomForestRegressor, StackingRegressor
@@ -53,7 +53,7 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     print(f"Master Matrix Synced! Total feature variables evaluated: {X_train.shape[1]}")
 
-    # 6. Define and Train Individual Algorithms
+    # 6. Define Individual Algorithms
     models = {
         "linear_model": LinearRegression(),
         "svm_model": SVR(kernel='rbf', C=25000, epsilon=0.1),
@@ -62,22 +62,39 @@ def main():
         "lightgbm_model": LGBMRegressor(n_estimators=120, learning_rate=0.08, random_state=42, verbose=-1)
     }
 
-    print(f"\n{'Model Architecture':<25} | {'MAE':<12} | {'RMSE':<12} | {'R2 Score':<10}")
-    print("-" * 72)
+    print("\n" + "="*85)
+    print("Evaluating Individual Base Models using 10-Fold Cross-Validation...")
+    print("="*85)
+    print(f"{'Model Architecture':<23} | {'10-Fold CV R²':<13} | {'Test MAE':<12} | {'Test RMSE':<12} | {'Test R²':<10}")
+    print("-" * 85)
     
     for filename, model in models.items():
+        # Execute 10-Fold Cross-Validation on the training split to get robust validation metrics
+        cv_results = cross_validate(
+            model, X_train, y_train, 
+            cv=10, 
+            scoring='r2', 
+            n_jobs=-1
+        )
+        mean_cv_r2 = np.mean(cv_results['test_score'])
+        
+        # Fit on full training data partition to evaluate on holdout test set
         model.fit(X_train, y_train)
         preds = model.predict(X_test)
-        print(f"{filename:<25} | ${mean_absolute_error(y_test, preds):<11,.2f} | ${root_mean_squared_error(y_test, preds):<11,.2f} | {r2_score(y_test, preds):<10.4f}")
+        
+        test_mae = mean_absolute_error(y_test, preds)
+        test_rmse = root_mean_squared_error(y_test, preds)
+        test_r2 = r2_score(y_test, preds)
+        
+        print(f"{filename:<23} | {mean_cv_r2:<13.4f} | ${test_mae:<11,.2f} | ${test_rmse:<11,.2f} | {test_r2:<10.4f}")
         
         # Serialize model to disk immediately after evaluation
         joblib.dump(model, f'models/{filename}.joblib')
-        print(f"   [Saved to models/{filename}.joblib]")
 
     # 7. Expanded Level-1 Hybrid Ensemble Stacking Super-Learner (5 Experts)
-    print("\n" + "="*50)
-    print("Fitting Expanded Level-1 Stacking Hybrid Regressor...")
-    print("="*50)
+    print("\n" + "="*85)
+    print("Fitting Expanded Level-1 Stacking Hybrid Regressor (Using 10-Fold CV)...")
+    print("="*85)
     
     estimators = [
         ('lr', LinearRegression()),
@@ -90,14 +107,19 @@ def main():
     stacked_ensemble = StackingRegressor(
         estimators=estimators,
         final_estimator=Ridge(alpha=5.0),
-        cv=5,
+        cv=10,  # Switched from 5-fold to 10-fold cross-validation layer
         n_jobs=-1
     )
     
+    # Train the ensemble and use 10-fold internal CV splits for the meta-learner feature synthesis
     stacked_ensemble.fit(X_train, y_train)
     ens_preds = stacked_ensemble.predict(X_test)
     
-    print(f"\n{'FINAL HYBRID STACK':<25} | ${mean_absolute_error(y_test, ens_preds):<11,.2f} | ${root_mean_squared_error(y_test, ens_preds):<11,.2f} | {r2_score(y_test, ens_preds):<10.4f}")
+    ens_mae = mean_absolute_error(y_test, ens_preds)
+    ens_rmse = root_mean_squared_error(y_test, ens_preds)
+    ens_r2 = r2_score(y_test, ens_preds)
+    
+    print(f"\n{'FINAL HYBRID STACK':<23} | {'[Meta Trained]':<13} | ${ens_mae:<11,.2f} | ${ens_rmse:<11,.2f} | {ens_r2:<10.4f}")
     
     # Save your champion hybrid ensemble configuration
     joblib.dump(stacked_ensemble, 'models/final_stacked_ensemble.joblib')
